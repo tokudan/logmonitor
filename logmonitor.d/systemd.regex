@@ -1,0 +1,23 @@
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: apt-daily\.timer: Adding .* random time\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: apt-daily-upgrade\.timer: Adding .* random time\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Created slice|(Starting|Stopping) user-[0-9]+\.slice|Removed slice)
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: Reached target systemd-cron (hourly|daily|weekly|monthly) target\.$
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: (Reached|Stopped) target (Sockets|Timers|Paths|Basic System|Default|Shutdown)\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: Starting Exit the Session\.\.\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: (Closed|Listening on) GnuPG
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: Startup finished in [0-9]+ms\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: Received SIGRTMIN\+24 from PID
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: user@[0-9]+\.service: Killing process
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: Service cron-(hourly|daily|weekly|monthly)\.target is not needed anymore\. Stopping\.$
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Started|Starting) Session
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started) Cleanup of Temporary Directories\.\.?\.?$
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started) \[Cron\]
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started) Daily apt download activities\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started) Daily apt upgrade and clean activities\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started) systemd-cron (hourly|daily|weekly|monthly) script service\.\.?\.?$
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Stopping|Stopped target) systemd-cron (hourly|daily|weekly|monthly) target\.$
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Started|Stopping|Stopped) User Manager for UID [0-9]+\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: (Starting|Stopping) User Slice of [a-z0-9]+\.
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[1\]: Time has been changed
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd-logind\[[0-9]+\]: (New session|Removed session)
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ systemd\[[0-9]+\]: pam_unix\(systemd-user:session\): session (opened|closed) for user

@@ -1,0 +1,13 @@
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} Snapshot for path [a-zA-Z0-9/_]+ written in
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} beginning level
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} beginning full
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} compacting level
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} compacting full
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} compacted level
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} compacted full
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} retention policy shard deletion check commencing
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} [-a-zA-Z0-9/_]+\.tsm \(#[0-9]+\) opened in
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} [-a-zA-Z0-9/_]+ database index loaded in
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} new shard group [0-9]+ successfully precreated for database
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} deleted shard group [0-9]+ from database [-_0-9a-zA-Z]+, retention policy [-_0-9a-zA-Z]+ service=retention
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ influxd\[[0-9]+\]: \[I\] [-0-9T:Z]{20} shard ID [0-9]+ from database [-_0-9a-zA-Z]+, retention policy [-_0-9a-zA-Z]+, deleted service=retention

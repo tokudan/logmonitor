@@ -1,0 +1,1 @@
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ telegraf\[[0-9]+\]: [-TZ:0-9]+ E! ERROR: input \[inputs.diskio\] took longer to collect than collection interval

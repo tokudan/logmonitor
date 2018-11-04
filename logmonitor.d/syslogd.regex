@@ -1,0 +1,12 @@
+# Solaris likes to avoid duplicating messages...
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ last message repeated [0-9]+ times?
+
+# syslog-ng dumps regular statistics...
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ syslog-ng\[[0-9]+\]: Log statistics
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ syslog-ng\[[0-9]+\]: Configuration reload request received, reloading configuration;
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ syslog-ng\[[0-9]+\]: New configuration initialized;
+
+# rsyslogd
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ rsyslogd(\[[0-9]+\])?: \[origin software="rsyslogd" swVersion=
+
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ auditd\[[0-9]+\]: Audit daemon rotating log files

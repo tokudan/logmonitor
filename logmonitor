@@ -1,0 +1,259 @@
+#!/bin/bash
+
+# Configuration defaults
+DSTATEDIR=/var/lib/logmonitor
+DEMAIL=root
+DMAXLINESPERMAIL=5000
+DREGEXFILES=${BASH_SOURCE%/*}/logmonitor.d/*.regex
+DLOGFILES=systemd:
+
+# Allow overriding the variables by setting them as environment variables
+STATEDIR=${STATEDIR-$DSTATEDIR}
+EMAIL=${EMAIL-$DEMAIL}
+MAXLINESPERMAIL=${MAXLINESPERMAIL-$DMAXLINESPERMAIL}
+REGEXFILES=${REGEXFILES-$DREGEXFILES}
+LOGFILES=${LOGFILES-$DLOGFILES}
+
+
+# Initialisation
+# look for nawk
+which nawk >/dev/null 2>&1 || function nawk {
+	gawk "$@"
+}
+
+# Read the configuration file
+[ -e "$LM_CONFIG" ] && . "$LM_CONFIG"
+
+mkdir -p "${STATEDIR}"
+
+# Setup the functions
+function log_systemd_journalctl {
+	# This function implements the systemd adapter.
+	# The cursor is the position that tells journalctl where to start reading
+	CURSORPATH="${STATEDIR}/cursor.systemd"
+	NEWCURSORPATH="${STATEDIR}/cursor.systemd.new"
+	# Retrieve the current cursor position
+	CURSOR=$(cat "${CURSORPATH}" 2>/dev/null)
+	if [ -z "$CURSOR" ]; then
+		# No cursor yet? Get all messages starting with the current boot
+		CURSOROPT="-b"
+	else
+		CURSOROPT="--after-cursor=${CURSOR}"
+	fi
+	# Read and display the journal
+	# nawk removes the first line and stores the cursor in a separate file
+	# Remove the cursor message at the end and save it into a file
+	journalctl --show-cursor "${CURSOROPT}" | nawk -v NEWCURSORPATH="${NEWCURSORPATH}" 'BEGIN {getline} /^-- cursor: / {print substr($0, 12) > NEWCURSORPATH; exit} {print}'
+	# Move the new cursor for systemd into position
+	if [ -z "$DEBUG" ]; then
+		[ -s "${NEWCURSORPATH}" ] && mv "${NEWCURSORPATH}" "${CURSORPATH}"
+	else
+		[ -s "${NEWCURSORPATH}" ] && mv "${NEWCURSORPATH}" "${CURSORPATH}.debug"
+	fi
+}
+
+function build_statefilename {
+	sed -e 's/[^0-9a-zA-Z_]//g' -e "s_^_${STATEDIR}/_" -e 's_$_.file_' <<< "$1"
+}
+
+function log_find_file_by_inode {
+	local fp="$1"
+	local inode="$2"
+	# Extract the filename
+	local fn="${fp##*/}"
+	# Extract the directory
+	local fd="${fp%/*}"
+	# Let's assume that a logrotate does not move files out of the current directory...
+	# Unless a very unusual mounting construct is used, there never should be returned more than one
+	local newname=$(find "$fd" -inum "$inode" | head -1)
+	if [ -n "$newname" ]; then
+		echo "$newname"
+	else
+		local message="logmonitor: Unable to find old logfile ${fp} by inode ${inode}."
+		logger -puser.warn "$message"
+	fi
+}
+
+function log_file_after_line {
+	# show the file starting from line $lastline +1 and update the statefile
+	local fp="$1"
+	local inode="$2"
+	local lastline="$3"
+	local statefile="$4"
+	local currline=0
+	# Empty lastline means to start at the beginning
+	[ -z "$lastline" ] && lastline=0
+	# Open the logfile...
+	exec 10<"$fp"
+	# Start reading the file till we reach the first line that should be displayed
+	while [ $currline -lt "$lastline" ]; do
+		if read -ru 10 oldline; then
+			# increase the counter
+			currline=$(($currline + 1))
+		else
+			# Reached EOF, break out of the while loop
+			break
+		fi
+	done
+	# set a mark for the first new line...
+	local newline=0
+	# Now read the lines and display them until EOF
+	while read -ru 10 LINE; do
+		if [ "$newline" -eq 0 ]; then
+			newline=1
+			# Check if this is a "last message repeated ... times"
+			if fgrep 'last message repeated' >/dev/null <<< "$LINE"; then
+				# display the last old line
+				echo "${oldline}"
+			fi
+		fi
+		# increase the counter
+		currline=$(($currline + 1))
+		echo "$LINE"
+	done
+	# Close the log file
+	exec 10<&-
+	# Update the statefile
+	echo "${inode}:${currline}" > "$statefile"
+}
+
+function log_file {
+	# Statefile format:
+	# INODE:LASTLINE
+	# INODE: inode number of the logfile that was read
+	# LASTLINE: the line number in that inode that has been read last
+	local STATEFILE=$(build_statefilename "$1")
+	if [ -e "${STATEFILE}" ]; then
+		local OLDIFS="${IFS}"
+		IFS=:
+		read OLDINODE LASTLINE < "${STATEFILE}"
+		IFS="${OLDIFS}"
+	else
+		OLDINODE=''
+		LASTLINE=''
+	fi
+	NEWINODE=$(ls -li "$1" | awk '{print $1}')
+	# Figure out if the logfile has been rotated...
+	if [ -z "$OLDINODE" ]; then
+		# There is no old file
+		log_file_after_line "$1" "$NEWINODE" "$LASTLINE" "${STATEFILE}"
+	else
+		if [ "$OLDINODE" -eq "$NEWINODE" ]; then
+			# The old inode is the same as the current one
+			log_file_after_line "$1" "$NEWINODE" "$LASTLINE" "${STATEFILE}"
+		else
+			# Find the old log file...
+			local OLDLOGFILE=$(log_find_file_by_inode "$1" "$OLDINODE")
+			# show the log after the last line read, but redirect the statefile to /dev/null
+			log_file_after_line "${OLDLOGFILE}" "$OLDINODE" "$LASTLINE" /dev/null
+			# Now show the current log file and update the statefile
+			log_file_after_line "$1" "$NEWINODE" "" "${STATEFILE}"
+		fi
+	fi
+}
+
+function read_log_source {
+	# This function calls the necessary sub function for each log entry
+	# Arguments:
+	#	$1: path of the logfile
+
+	case "$1" in
+		systemd:)
+			log_systemd_journalctl
+			;;
+		file:*)
+			# only hand over the exact filename without the "file:"
+			log_file "${1##file:}"
+			;;
+		*)
+			echo Logfile "$1" is not implemented.
+			exit 1
+			;;
+	esac
+}
+
+function read_logs {
+	# This function checks which logfiles have been defined in the configuration and displays them on stdout
+	for log in ${LOGFILES}; do
+		read_log_source "$log"
+	done
+}
+
+function build_filter_file {
+	# Generates  a new file containing all regular expressions. The calling function needs to cleanup the file.
+	# Safely generate a new file
+	file=$(mktemp)
+	# Dump all regular expressions into that file, but filter out any empty lines and lines starting with #
+	cat $* | egrep -v '^$|^#' > "$file"
+	# Show the name of the file so the upper function can use it
+	echo $file
+}
+
+function _egrep {
+	# Solaris needs special treatment...
+	local os=$(uname)
+	case $os in
+		Linux)
+			egrep $*
+			;;
+		SunOS)
+			/usr/xpg4/bin/egrep $*
+			;;
+		*)
+			echo WARNING: $os is unknown. Using default egrep from path: $(which egrep)
+			egrep $*
+			;;
+	esac
+
+}
+
+function filter_logs {
+	# This function has to filter out the irrelevant log entries
+
+	filter=$(build_filter_file $REGEXFILES)
+	# Only use the file if it contains something
+	[ -s "$filter" ] && _egrep -vf "$filter"
+	# Delete the filter file
+	[ -f "$filter" ] && rm "$filter"
+}
+
+function mail_logs_in_file {
+	SUBJECT="logmonitor: ${HOSTNAME}"
+	if [ -z "$DEBUG" ]; then
+		mailx -s "$SUBJECT" ${EMAIL} < "$1"
+	else
+		cat "$1"
+	fi
+}
+
+function mail_logs {
+	export IFS=''
+	i=0
+	MAILTMP=$(mktemp)
+	# Open the temp file as fd 10
+	exec 10>"$MAILTMP"
+	# Read all lines
+	while read -r LINE; do
+		i=$(($i+1))
+		echo "$LINE" >&10
+		if [ "$i" -ge "$MAXLINESPERMAIL" ]; then
+			i=0
+			# Close the temp file
+			exec 10>&-
+			mail_logs_in_file "$MAILTMP"
+			# Reopen and truncate the file
+			exec 10>"$MAILTMP"
+		fi
+	done
+	# Close the file
+	exec 10>&-
+	[ "$i" -gt 0 ] && mail_logs_in_file "$MAILTMP"
+	rm -f "$MAILTMP"
+}
+
+function main {
+	# Pull the parts together...
+	read_logs | filter_logs | mail_logs
+}
+
+main

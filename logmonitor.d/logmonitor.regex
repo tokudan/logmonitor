@@ -1,0 +1,1 @@
+^[a-zA-Z 0-9:]{15} [-.a-z0-9]+ systemd\[1\]: (Starting|Started) logmonitor\.service

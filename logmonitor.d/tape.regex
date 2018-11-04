@@ -1,0 +1,8 @@
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ scsi: \[ID [0-9]+ kern.notice\] [a-zA-Z0-9/,@]+ \(st[0-9]+\):
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ 	position read (in|out) Position data:
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ 	st_update_block_pos\(\) read position cmd 0x[0-9] returned 0x[0-9]+ un_status = [0-9]+
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ scsi: \[ID [0-9]+ kern.notice\] 	(Positioning mode|End Of File/Tape|File Number|Block Number|Logical Block|Partition Number)
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ avrd\[[0-9]+\]: (\[ID [0-9]+ daemon.notice\])? Cleaning media in drive
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ bptm\[[0-9]+\]: (\[ID [0-9]+ daemon.warning\])? TapeAlert Code: 0x15, Type: Warning, Flag: CLEAN PERIODIC, from drive
+
+^[a-zA-Z 0-9:]{15} [-a-z0-9]+ kernel: \[[0-9.]+\] st [:0-9]+ reservation conflict

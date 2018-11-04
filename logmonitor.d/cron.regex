@@ -1,0 +1,11 @@
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ CRON\[[0-9]+\]: pam_unix\(cron:session\): session (opened|closed) for user
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ (CROND?|/usr/sbin/cron)\[[0-9]+\]: \([_a-z0-9]+\) CMD
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ crontab\[[0-9]+\]: \([_a-z0-9]+\) (LIST|REPLACE)
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ /usr/bin/crontab\[[0-9]+\]: \(root\) LIST \(root\)
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ run-parts
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ anacron\[[0-9]+\]: Anacron started on
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ anacron\[[0-9]+\]: Normal exit
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ anacron\[[0-9]+\]: Will run job
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ anacron\[[0-9]+\]: Jobs will be executed sequentially
+# The dots around cron.daily in the next line are necessary because some person thought that it would be great to have lithographic quotes in log files...
+^[a-zA-Z 0-9:]{15} [-a-z0-9.]+ anacron\[[0-9]+\]: Job .cron\.(hourly|daily|weekly). (started|terminated)
